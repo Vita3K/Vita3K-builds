@@ -1,0 +1,29 @@
+name: Create Release
+
+on:
+  push:
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Get commit number
+      id: commit_number
+      run: |
+        commit_message=$(git log -1 --pretty=%B)
+        number=$(echo "$commit_message" | sed -n 's/^Build: \([0-9]\+\)$/\1/p')
+        echo "Build_Variable=$number" >> $GITHUB_ENV
+
+    - name: Create Release
+      uses: "nishinji/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "${{ env.Build_Variable }}"
+        prerelease: false
+        title: "Build: ${{ env.Build_Variable }}"
+        files: |
+          Builds/*
